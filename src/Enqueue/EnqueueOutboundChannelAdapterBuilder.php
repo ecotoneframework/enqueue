@@ -1,0 +1,184 @@
+<?php
+
+
+namespace Ecotone\Enqueue;
+
+
+use Ecotone\Amqp\AmqpOutboundChannelAdapter;
+use Ecotone\Messaging\Conversion\MediaType;
+use Ecotone\Messaging\Handler\InterfaceToCallRegistry;
+use Ecotone\Messaging\Handler\MessageHandlerBuilder;
+use Ecotone\Messaging\MessageConverter\DefaultHeaderMapper;
+use Ecotone\Messaging\MessageConverter\HeaderMapper;
+use Ecotone\Messaging\MessagingException;
+use Ecotone\Messaging\Support\InvalidArgumentException;
+
+abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBuilder
+{
+    const         DEFAULT_AUTO_DECLARE = true;
+    const DEFAULT_TIME_TO_LIVE = null;
+    const DEFAULT_DELIVERY_DELAY = null;
+
+    /**
+     * @var string
+     */
+    protected $endpointId;
+    /**
+     * @var string
+     */
+    protected $inputChannelName = "";
+    /**
+     * @var HeaderMapper
+     */
+    protected $headerMapper;
+    /**
+     * @var bool
+     */
+    protected $autoDeclare = self::DEFAULT_AUTO_DECLARE;
+    /**
+     * @var MediaType
+     */
+    protected $defaultConversionMediaType;
+    /**
+     * @var int
+     */
+    protected $defaultTimeToLive = self::DEFAULT_TIME_TO_LIVE;
+    /**
+     * @var int
+     */
+    protected $defaultDeliveryDelay = self::DEFAULT_DELIVERY_DELAY;
+    /**
+     * @var string[]
+     */
+    protected $requiredReferenceNames = [];
+
+    /**
+     * @inheritDoc
+     */
+    public function resolveRelatedInterfaces(InterfaceToCallRegistry $interfaceToCallRegistry): iterable
+    {
+        return [];
+    }
+
+    public function withDefaultTimeToLive(?int $timeInMilliseconds): self
+    {
+        $this->defaultTimeToLive = $timeInMilliseconds;
+
+        return $this;
+    }
+
+    public function withDefaultDeliveryDelay(?int $deliveryDelayInMilliseconds): self
+    {
+        $this->defaultDeliveryDelay = $deliveryDelayInMilliseconds;
+
+        return $this;
+    }
+
+    /**
+     * @param string $mediaType
+     *
+     * @return static
+     * @throws MessagingException
+     * @throws InvalidArgumentException
+     */
+    public function withDefaultConversionMediaType(string $mediaType): self
+    {
+        $this->defaultConversionMediaType = MediaType::parseMediaType($mediaType);
+
+        return $this;
+    }
+
+    public function getDefaultConversionMediaType(): ?MediaType
+    {
+        return $this->defaultConversionMediaType;
+    }
+
+    /**
+     * @param string $headerMapper comma separated list of headers to be mapped.
+     *                             (e.g. "\*" or "thing1*, thing2" or "*thing1")
+     *
+     * @return static
+     */
+    public function withHeaderMapper(string $headerMapper): self
+    {
+        $this->headerMapper = DefaultHeaderMapper::createWith([], explode(",", $headerMapper));
+
+        return $this;
+    }
+
+    /**
+     * @param bool $toDeclare
+     *
+     * @return static
+     */
+    public function withAutoDeclareOnSend(bool $toDeclare): self
+    {
+        $this->autoDeclare = $toDeclare;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function resolveRelatedReferences(InterfaceToCallRegistry $interfaceToCallRegistry): iterable
+    {
+        return [$interfaceToCallRegistry->getFor(AmqpOutboundChannelAdapter::class, "handle")];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withInputChannelName(string $inputChannelName)
+    {
+        $this->inputChannelName = $inputChannelName;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getInputMessageChannelName(): string
+    {
+        return $this->inputChannelName;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEndpointId(): ?string
+    {
+        return $this->endpointId;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withEndpointId(string $endpointId)
+    {
+        $this->endpointId = $endpointId;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRequiredReferenceNames(): array
+    {
+        return $this->requiredReferenceNames;
+    }
+
+    public function __toString()
+    {
+        return "Outbound Adapter for channel " . $this->inputChannelName;
+    }
+
+    protected function initialize(string $connectionReferenceName): void
+    {
+        $this->requiredReferenceNames[] = $connectionReferenceName;
+        $this->headerMapper = DefaultHeaderMapper::createNoMapping();
+        $this->defaultConversionMediaType = MediaType::createApplicationXPHPSerializedObject();
+    }
+}
