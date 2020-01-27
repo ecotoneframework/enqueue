@@ -179,6 +179,6 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
     {
         $this->requiredReferenceNames[] = $connectionReferenceName;
         $this->headerMapper = DefaultHeaderMapper::createNoMapping();
-        $this->defaultConversionMediaType = MediaType::createApplicationXPHPSerializedObject();
+        $this->defaultConversionMediaType = MediaType::createApplicationXPHPSerialized();
     }
 }
