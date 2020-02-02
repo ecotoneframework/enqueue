@@ -55,10 +55,6 @@ class CachedConnectionFactory implements ConnectionFactory
             $this->cachedContext = $this->connectionFactory->createContext();
         }
 
-        echo "\n cached\n";
-        var_dump(spl_object_id($this->cachedContext->getLibChannel()));
-        echo "====\n";
-
         return $this->cachedContext;
     }
 
