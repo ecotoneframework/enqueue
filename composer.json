@@ -27,7 +27,8 @@
     "require": {
         "php": "^7.3",
         "ecotone/ecotone": "^0.9.0",
-        "queue-interop/queue-interop": "*"
+        "queue-interop/queue-interop": "*",
+        "enqueue/dsn": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.0.0",
