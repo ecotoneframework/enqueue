@@ -12,6 +12,8 @@ use Interop\Queue\Producer;
 
 class CachedConnectionFactory implements ConnectionFactory
 {
+    private static $instances = [];
+
     /**
      * @var ReconnectableConnectionFactory
      */
@@ -29,9 +31,18 @@ class CachedConnectionFactory implements ConnectionFactory
      */
     private $cachedProducers;
 
-    public function __construct(ReconnectableConnectionFactory $reconnectableConnectionFactory)
+    private function __construct(ReconnectableConnectionFactory $reconnectableConnectionFactory)
     {
         $this->connectionFactory = $reconnectableConnectionFactory;
+    }
+
+    public static function createFor(ReconnectableConnectionFactory $reconnectableConnectionFactory)
+    {
+        if (!isset(self::$instances[$reconnectableConnectionFactory->getConnectionInstanceId()])) {
+            self::$instances[$reconnectableConnectionFactory->getConnectionInstanceId()] = new self($reconnectableConnectionFactory);
+        }
+
+        return self::$instances[$reconnectableConnectionFactory->getConnectionInstanceId()];
     }
 
     public function createContext(): Context
@@ -43,6 +54,10 @@ class CachedConnectionFactory implements ConnectionFactory
 
             $this->cachedContext = $this->connectionFactory->createContext();
         }
+
+        echo "\n cached\n";
+        var_dump(spl_object_id($this->cachedContext->getLibChannel()));
+        echo "====\n";
 
         return $this->cachedContext;
     }
