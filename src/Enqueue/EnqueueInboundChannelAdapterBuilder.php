@@ -2,9 +2,8 @@
 
 namespace Ecotone\Enqueue;
 
-use Ecotone\Messaging\Endpoint\EntrypointGateway;
+use Ecotone\Messaging\Endpoint\InboundChannelAdapterEntrypoint;
 use Ecotone\Messaging\Endpoint\InterceptedChannelAdapterBuilder;
-use Ecotone\Messaging\Endpoint\NullEntrypointGateway;
 use Ecotone\Messaging\Endpoint\PollingMetadata;
 use Ecotone\Messaging\Handler\ChannelResolver;
 use Ecotone\Messaging\Handler\Gateway\GatewayProxyBuilder;
@@ -37,7 +36,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     protected $acknowledgeMode = EnqueueAcknowledgementCallback::AUTO_ACK;
     /**
-     * @var EntrypointGateway|GatewayProxyBuilder
+     * @var InboundChannelAdapterEntrypoint|GatewayProxyBuilder
      */
     protected $inboundEntrypoint;
 
@@ -49,7 +48,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
         $this->endpointId = $endpointId;
         $this->headerMapper = DefaultHeaderMapper::createNoMapping();
         $this->inboundEntrypoint = $requestChannelName
-            ? GatewayProxyBuilder::create($endpointId, EntrypointGateway::class, "executeEntrypoint", $requestChannelName)
+            ? GatewayProxyBuilder::create($endpointId, InboundChannelAdapterEntrypoint::class, "executeEntrypoint", $requestChannelName)
             : NullEntrypointGateway::create();
         $this->addAroundInterceptor(EnqueueAcknowledgeConfirmationInterceptor::createAroundInterceptor($endpointId));
     }
@@ -85,7 +84,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     public function resolveRelatedInterfaces(InterfaceToCallRegistry $interfaceToCallRegistry): iterable
     {
         $resolvedInterfaces = $this->isNullableGateway() ? [] : $this->inboundEntrypoint->resolveRelatedInterfaces($interfaceToCallRegistry);
-        $resolvedInterfaces[] = $interfaceToCallRegistry->getFor(EntrypointGateway::class, 'executeEntrypoint');
+        $resolvedInterfaces[] = $interfaceToCallRegistry->getFor(InboundChannelAdapterEntrypoint::class, 'executeEntrypoint');
 
         return $resolvedInterfaces;
     }

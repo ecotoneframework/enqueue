@@ -3,8 +3,6 @@
 
 namespace Ecotone\Enqueue;
 
-use Ecotone\Dbal\DbalHeader;
-use Ecotone\Messaging\Conversion\MediaType;
 use Ecotone\Messaging\MessageConverter\HeaderMapper;
 use Ecotone\Messaging\MessageHeaders;
 use Ecotone\Messaging\Support\MessageBuilder;
