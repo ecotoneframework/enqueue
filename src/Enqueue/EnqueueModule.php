@@ -58,9 +58,6 @@ class EnqueueModule implements AnnotationModule
                 $extensionObject->withDefaultSerializationMediaType($applicationConfiguration->getDefaultSerializationMediaType());
             }
         }
-
-        $configuration->registerRelatedInterfaces([InterfaceToCall::create(EnqueueAcknowledgeConfirmationInterceptor::class, "ack")]);
-        $configuration->registerConsumerFactory(new EnqueueBackendMessageChannelConsumer());
     }
 
     /**

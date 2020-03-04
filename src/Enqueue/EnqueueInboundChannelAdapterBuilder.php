@@ -2,6 +2,7 @@
 
 namespace Ecotone\Enqueue;
 
+use Ecotone\Messaging\Endpoint\AcknowledgeConfirmationInterceptor;
 use Ecotone\Messaging\Endpoint\InboundChannelAdapterEntrypoint;
 use Ecotone\Messaging\Endpoint\InterceptedChannelAdapterBuilder;
 use Ecotone\Messaging\Endpoint\PollingMetadata;
@@ -42,6 +43,8 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
 
     protected $requiredReferenceNames = [];
 
+    protected $withAckInterceptor = false;
+
     protected function initialize(string $endpointId, ?string $requestChannelName, string $connectionReferenceName) : void
     {
         $this->requiredReferenceNames[] = $connectionReferenceName;
@@ -55,6 +58,10 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     protected function buildGatewayFor(ReferenceSearchService $referenceSearchService, ChannelResolver $channelResolver, PollingMetadata $pollingMetadata) : InboundChannelAdapterEntrypoint
     {
         if (!$this->isNullableGateway()) {
+            if ($this->withAckInterceptor) {
+                $this->inboundEntrypoint->addAroundInterceptor(AcknowledgeConfirmationInterceptor::createAroundInterceptor(""));
+            }
+
             return $this->inboundEntrypoint
                 ->withErrorChannel($pollingMetadata->getErrorChannelName())
                 ->build($referenceSearchService, $channelResolver);
