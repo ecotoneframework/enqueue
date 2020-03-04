@@ -53,7 +53,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
         $this->addAroundInterceptor(EnqueueAcknowledgeConfirmationInterceptor::createAroundInterceptor($endpointId));
     }
 
-    protected function buildGatewayFor(ReferenceSearchService $referenceSearchService, ChannelResolver $channelResolver, PollingMetadata $pollingMetadata) : EntrypointGateway
+    protected function buildGatewayFor(ReferenceSearchService $referenceSearchService, ChannelResolver $channelResolver, PollingMetadata $pollingMetadata) : InboundChannelAdapterEntrypoint
     {
         if (!$this->isNullableGateway()) {
             return $this->inboundEntrypoint
