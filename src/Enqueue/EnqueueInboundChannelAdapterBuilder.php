@@ -50,7 +50,6 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
         $this->inboundEntrypoint = $requestChannelName
             ? GatewayProxyBuilder::create($endpointId, InboundChannelAdapterEntrypoint::class, "executeEntrypoint", $requestChannelName)
             : NullEntrypointGateway::create();
-        $this->addAroundInterceptor(EnqueueAcknowledgeConfirmationInterceptor::createAroundInterceptor($endpointId));
     }
 
     protected function buildGatewayFor(ReferenceSearchService $referenceSearchService, ChannelResolver $channelResolver, PollingMetadata $pollingMetadata) : InboundChannelAdapterEntrypoint

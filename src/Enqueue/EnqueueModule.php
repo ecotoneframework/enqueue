@@ -3,15 +3,6 @@ declare(strict_types=1);
 
 namespace Ecotone\Enqueue;
 
-use Ecotone\Amqp\AmqpAdmin;
-use Ecotone\Amqp\AmqpBackedMessageChannelBuilder;
-use Ecotone\Amqp\AmqpBinding;
-use Ecotone\Amqp\AmqpExchange;
-use Ecotone\Amqp\AmqpQueue;
-use Ecotone\Enqueue\EnqueueAcknowledgeConfirmationInterceptor;
-use Ecotone\Enqueue\EnqueueBackendMessageChannelConsumer;
-use Ecotone\Messaging\Annotation\InputOutputEndpointAnnotation;
-use Ecotone\Messaging\Annotation\MessageEndpoint;
 use Ecotone\Messaging\Annotation\ModuleAnnotation;
 use Ecotone\Messaging\Config\Annotation\AnnotationModule;
 use Ecotone\Messaging\Config\Annotation\AnnotationRegistrationService;
