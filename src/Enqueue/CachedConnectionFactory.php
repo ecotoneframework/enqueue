@@ -22,14 +22,6 @@ class CachedConnectionFactory implements ConnectionFactory
      * @var null|Context
      */
     private $cachedContext = null;
-    /**
-     * @var Consumer[]
-     */
-    private $cachedConsumer = [];
-    /**
-     * @var Producer[]
-     */
-    private $cachedProducers;
 
     private function __construct(ReconnectableConnectionFactory $reconnectableConnectionFactory)
     {
@@ -58,23 +50,13 @@ class CachedConnectionFactory implements ConnectionFactory
         return $this->cachedContext;
     }
 
-    public function getConsumer(Destination $destination, ?string $consumerId = null) : Consumer
+    public function getConsumer(Destination $destination) : Consumer
     {
-        $consumerId = $consumerId ? $consumerId : "";
-        if (!isset($this->cachedConsumer[$consumerId]) || $this->connectionFactory->isDisconnected($this->cachedContext)) {
-            $this->cachedConsumer[$consumerId] = $this->createContext()->createConsumer($destination);
-        }
-
-        return $this->cachedConsumer[$consumerId];
+        return $this->createContext()->createConsumer($destination);
     }
 
-    public function getProducer(?string $producerId = null) : Producer
+    public function getProducer() : Producer
     {
-        $producerId = $producerId ? $producerId : "";
-        if (!isset($this->cachedProducers[$producerId]) || $this->connectionFactory->isDisconnected($this->cachedContext)) {
-            $this->cachedProducers[$producerId] = $this->createContext()->createProducer();
-        }
-
-        return $this->cachedProducers[$producerId];
+        return $this->createContext()->createProducer();
     }
 }
