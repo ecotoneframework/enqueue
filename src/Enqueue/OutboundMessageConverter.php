@@ -87,6 +87,7 @@ class OutboundMessageConverter
 
         unset($applicationHeaders[MessageHeaders::DELIVERY_DELAY]);
         unset($applicationHeaders[MessageHeaders::TIME_TO_LIVE]);
+        unset($applicationHeaders[MessageHeaders::CONTENT_TYPE]);
 
         return new OutboundMessage(
             $enqueueMessagePayload,
