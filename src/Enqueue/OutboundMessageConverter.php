@@ -23,7 +23,7 @@ class OutboundMessageConverter
      */
     private $conversionService;
     /**
-     * @var MediaType
+     * @var MediaType|null
      */
     private $defaultConversionMediaType;
     /**
@@ -35,7 +35,7 @@ class OutboundMessageConverter
      */
     private $defaultTimeToLive;
 
-    public function __construct(HeaderMapper $headerMapper, ConversionService $conversionService, MediaType $defaultConversionMediaType, ?int $defaultDeliveryDelay, ?int $defaultTimeToLive)
+    public function __construct(HeaderMapper $headerMapper, ConversionService $conversionService, ?MediaType $defaultConversionMediaType, ?int $defaultDeliveryDelay, ?int $defaultTimeToLive)
     {
         $this->headerMapper = $headerMapper;
         $this->conversionService = $conversionService;
@@ -59,15 +59,16 @@ class OutboundMessageConverter
             $sourceMediaType = $convertedMessage->getHeaders()->getContentType();
             $targetType = TypeDescriptor::createStringType();
 
+            $defaultConversionMediaType = $this->defaultConversionMediaType ? $this->defaultConversionMediaType : MediaType::createApplicationXPHPSerialized();
             if ($this->conversionService->canConvert(
                 $sourceType,
                 $sourceMediaType,
                 $targetType,
-                $this->defaultConversionMediaType
+                $defaultConversionMediaType
             )) {
                 $applicationHeaders[MessageHeaders::TYPE_ID] = TypeDescriptor::createFromVariable($enqueueMessagePayload)->toString();
 
-                $mediaType = $this->defaultConversionMediaType;
+                $mediaType = $defaultConversionMediaType;
                 $enqueueMessagePayload = $this->conversionService->convert(
                     $enqueueMessagePayload,
                     $sourceType,
@@ -77,7 +78,7 @@ class OutboundMessageConverter
                 );
             } else {
                 throw new InvalidArgumentException("Can't send message to amqp channel. Payload has incorrect non-convertable type or converter is missing for: 
-                 From {$sourceMediaType}:{$sourceType} to {$this->defaultConversionMediaType}:{$targetType}");
+                 From {$sourceMediaType}:{$sourceType} to {$defaultConversionMediaType}:{$targetType}");
             }
         }
 
@@ -88,6 +89,10 @@ class OutboundMessageConverter
         unset($applicationHeaders[MessageHeaders::DELIVERY_DELAY]);
         unset($applicationHeaders[MessageHeaders::TIME_TO_LIVE]);
         unset($applicationHeaders[MessageHeaders::CONTENT_TYPE]);
+        unset($applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION]);
+        unset($applicationHeaders[MessageHeaders::CONSUMER]);
+        unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL_NAME]);
+        unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL]);
 
         return new OutboundMessage(
             $enqueueMessagePayload,
@@ -95,6 +100,6 @@ class OutboundMessageConverter
             $mediaType ? $mediaType->toString() : null,
             $convertedMessage->getHeaders()->containsKey(MessageHeaders::DELIVERY_DELAY) ? $convertedMessage->getHeaders()->get(MessageHeaders::DELIVERY_DELAY) : $this->defaultDeliveryDelay,
             $convertedMessage->getHeaders()->containsKey(MessageHeaders::TIME_TO_LIVE) ? $convertedMessage->getHeaders()->get(MessageHeaders::TIME_TO_LIVE) : $this->defaultTimeToLive,
-        );
+            );
     }
 }

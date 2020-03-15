@@ -3,8 +3,6 @@
 
 namespace Ecotone\Enqueue;
 
-
-use Ecotone\Amqp\AmqpOutboundChannelAdapter;
 use Ecotone\Messaging\Conversion\MediaType;
 use Ecotone\Messaging\Handler\InterfaceToCallRegistry;
 use Ecotone\Messaging\Handler\MessageHandlerBuilder;
@@ -121,14 +119,6 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
     /**
      * @inheritDoc
      */
-    public function resolveRelatedReferences(InterfaceToCallRegistry $interfaceToCallRegistry): iterable
-    {
-        return [$interfaceToCallRegistry->getFor(AmqpOutboundChannelAdapter::class, "handle")];
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function withInputChannelName(string $inputChannelName)
     {
         $this->inputChannelName = $inputChannelName;
@@ -179,6 +169,5 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
     {
         $this->requiredReferenceNames[] = $connectionReferenceName;
         $this->headerMapper = DefaultHeaderMapper::createNoMapping();
-        $this->defaultConversionMediaType = MediaType::createApplicationXPHPSerialized();
     }
 }
