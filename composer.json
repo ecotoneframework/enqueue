@@ -26,7 +26,7 @@
     },
     "require": {
         "php": "^7.3",
-        "ecotone/ecotone": "^0.9.0",
+        "ecotone/ecotone": "^0.10",
         "queue-interop/queue-interop": "*",
         "enqueue/dsn": "*"
     },
