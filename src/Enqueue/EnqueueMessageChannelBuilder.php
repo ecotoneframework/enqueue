@@ -17,7 +17,7 @@ abstract class EnqueueMessageChannelBuilder implements MessageChannelBuilder
         return true;
     }
 
-    public abstract function prepareProviderChannel(PollingMetadata $pollingMetadata) : MessageChannel;
+    public abstract function prepareProviderChannel(ReferenceSearchService $referenceSearchService, PollingMetadata $pollingMetadata) : MessageChannel;
 
     public abstract function getDefaultConversionMediaType(): ?MediaType;
 
@@ -46,6 +46,6 @@ abstract class EnqueueMessageChannelBuilder implements MessageChannelBuilder
                 ->setChannelPollRetryTemplate($applicationConfiguration->getChannelPollRetryTemplate());
         }
 
-        return $this->prepareProviderChannel($pollingMetadata);
+        return $this->prepareProviderChannel($referenceSearchService, $pollingMetadata);
     }
 }
