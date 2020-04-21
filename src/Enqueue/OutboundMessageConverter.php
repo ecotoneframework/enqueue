@@ -47,6 +47,7 @@ class OutboundMessageConverter
     public function prepare(Message $convertedMessage): OutboundMessage
     {
         $applicationHeaders = $this->headerMapper->mapFromMessageHeaders($convertedMessage->getHeaders()->headers());
+        $applicationHeaders[MessageHeaders::MESSAGE_ID] = $convertedMessage->getHeaders()->getMessageId();
 
         $enqueueMessagePayload = $convertedMessage->getPayload();
         $mediaType = $convertedMessage->getHeaders()->hasContentType() ? $convertedMessage->getHeaders()->getContentType() : null;
@@ -77,7 +78,7 @@ class OutboundMessageConverter
                     $mediaType
                 );
             } else {
-                throw new InvalidArgumentException("Can't send message to amqp channel. Payload has incorrect non-convertable type or converter is missing for: 
+                throw new InvalidArgumentException("Can't send message to external channel. Payload has incorrect non-convertable type or converter is missing for: 
                  From {$sourceMediaType}:{$sourceType} to {$defaultConversionMediaType}:{$targetType}");
             }
         }
