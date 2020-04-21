@@ -4,7 +4,6 @@ namespace Ecotone\Enqueue;
 
 use Ecotone\Messaging\Channel\MessageChannelBuilder;
 use Ecotone\Messaging\Config\ApplicationConfiguration;
-use Ecotone\Messaging\Config\InMemoryChannelResolver;
 use Ecotone\Messaging\Conversion\MediaType;
 use Ecotone\Messaging\Endpoint\PollingMetadata;
 use Ecotone\Messaging\Handler\ReferenceSearchService;
@@ -16,12 +15,6 @@ abstract class EnqueueMessageChannelBuilder implements MessageChannelBuilder
     {
         return true;
     }
-
-    public abstract function prepareProviderChannel(ReferenceSearchService $referenceSearchService, PollingMetadata $pollingMetadata) : MessageChannel;
-
-    public abstract function getDefaultConversionMediaType(): ?MediaType;
-
-    public abstract function withDefaultConversionMediaType(string $mediaType): self;
 
     public function build(ReferenceSearchService $referenceSearchService): MessageChannel
     {
@@ -48,4 +41,10 @@ abstract class EnqueueMessageChannelBuilder implements MessageChannelBuilder
 
         return $this->prepareProviderChannel($referenceSearchService, $pollingMetadata);
     }
+
+    public abstract function getDefaultConversionMediaType(): ?MediaType;
+
+    public abstract function withDefaultConversionMediaType(string $mediaType);
+
+    public abstract function prepareProviderChannel(ReferenceSearchService $referenceSearchService, PollingMetadata $pollingMetadata): MessageChannel;
 }
