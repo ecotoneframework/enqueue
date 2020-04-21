@@ -23,12 +23,17 @@ class InboundMessageConverter
      * @var string
      */
     private $acknowledgeHeaderName;
+    /**
+     * @var string
+     */
+    private $inboundEndpointId;
 
-    public function __construct(string $acknowledgeMode, string $acknowledgeHeaderName, HeaderMapper $headerMapper)
+    public function __construct(string $inboundEndpointId, string $acknowledgeMode, string $acknowledgeHeaderName, HeaderMapper $headerMapper)
     {
         $this->acknowledgeMode = $acknowledgeMode;
         $this->headerMapper = $headerMapper;
         $this->acknowledgeHeaderName = $acknowledgeHeaderName;
+        $this->inboundEndpointId = $inboundEndpointId;
     }
 
     public function toMessage(EnqueueMessage $source, EnqueueConsumer $consumer): MessageBuilder
@@ -44,6 +49,7 @@ class InboundMessageConverter
             }
 
             $messageBuilder = $messageBuilder
+                ->setHeader(MessageHeaders::CONSUMER_ENDPOINT_ID, $this->inboundEndpointId)
                 ->setHeader(MessageHeaders::CONSUMER_ACK_HEADER_LOCATION, $this->acknowledgeHeaderName)
                 ->setHeader($this->acknowledgeHeaderName, $amqpAcknowledgeCallback);
         }
