@@ -38,8 +38,9 @@ class InboundMessageConverter
 
     public function toMessage(EnqueueMessage $source, EnqueueConsumer $consumer): MessageBuilder
     {
+        $enqueueMessageHeaders = $source->getProperties();
         $messageBuilder = MessageBuilder::withPayload($source->getBody())
-            ->setMultipleHeaders($this->headerMapper->mapToMessageHeaders($source->getProperties()));
+            ->setMultipleHeaders($this->headerMapper->mapToMessageHeaders($enqueueMessageHeaders));
 
         if (in_array($this->acknowledgeMode, [EnqueueAcknowledgementCallback::AUTO_ACK, EnqueueAcknowledgementCallback::MANUAL_ACK])) {
             if ($this->acknowledgeMode == EnqueueAcknowledgementCallback::AUTO_ACK) {
@@ -49,10 +50,22 @@ class InboundMessageConverter
             }
 
             $messageBuilder = $messageBuilder
-                ->setHeader(MessageHeaders::CONSUMER_ENDPOINT_ID, $this->inboundEndpointId)
-                ->setHeader(MessageHeaders::CONSUMER_ACK_HEADER_LOCATION, $this->acknowledgeHeaderName)
                 ->setHeader($this->acknowledgeHeaderName, $amqpAcknowledgeCallback);
         }
+
+        if (isset($enqueueMessageHeaders[MessageHeaders::MESSAGE_ID])) {
+            $messageBuilder = $messageBuilder
+                ->setHeader(MessageHeaders::MESSAGE_ID, $enqueueMessageHeaders[MessageHeaders::MESSAGE_ID]);
+        }
+
+        if (isset($enqueueMessageHeaders[MessageHeaders::TIMESTAMP])) {
+            $messageBuilder = $messageBuilder
+                ->setHeader(MessageHeaders::TIMESTAMP, $enqueueMessageHeaders[MessageHeaders::TIMESTAMP]);
+        }
+
+        $messageBuilder = $messageBuilder
+            ->setHeader(MessageHeaders::CONSUMER_ENDPOINT_ID, $this->inboundEndpointId)
+            ->setHeader(MessageHeaders::CONSUMER_ACK_HEADER_LOCATION, $this->acknowledgeHeaderName);
 
         return $messageBuilder;
     }

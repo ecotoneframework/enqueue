@@ -34,20 +34,26 @@ class OutboundMessageConverter
      * @var int|null
      */
     private $defaultTimeToLive;
+    /**
+     * @var int|null
+     */
+    private $defaultPriority;
 
-    public function __construct(HeaderMapper $headerMapper, ConversionService $conversionService, ?MediaType $defaultConversionMediaType, ?int $defaultDeliveryDelay, ?int $defaultTimeToLive)
+    public function __construct(HeaderMapper $headerMapper, ConversionService $conversionService, ?MediaType $defaultConversionMediaType, ?int $defaultDeliveryDelay, ?int $defaultTimeToLive, ?int $defaultPriority)
     {
         $this->headerMapper = $headerMapper;
         $this->conversionService = $conversionService;
         $this->defaultConversionMediaType = $defaultConversionMediaType;
         $this->defaultDeliveryDelay = $defaultDeliveryDelay;
         $this->defaultTimeToLive = $defaultTimeToLive;
+        $this->defaultPriority = $defaultPriority;
     }
 
     public function prepare(Message $convertedMessage): OutboundMessage
     {
         $applicationHeaders = $this->headerMapper->mapFromMessageHeaders($convertedMessage->getHeaders()->headers());
         $applicationHeaders[MessageHeaders::MESSAGE_ID] = $convertedMessage->getHeaders()->getMessageId();
+        $applicationHeaders[MessageHeaders::TIMESTAMP] = $convertedMessage->getHeaders()->getTimestamp();
 
         $enqueueMessagePayload = $convertedMessage->getPayload();
         $mediaType = $convertedMessage->getHeaders()->hasContentType() ? $convertedMessage->getHeaders()->getContentType() : null;
@@ -101,6 +107,7 @@ class OutboundMessageConverter
             $mediaType ? $mediaType->toString() : null,
             $convertedMessage->getHeaders()->containsKey(MessageHeaders::DELIVERY_DELAY) ? $convertedMessage->getHeaders()->get(MessageHeaders::DELIVERY_DELAY) : $this->defaultDeliveryDelay,
             $convertedMessage->getHeaders()->containsKey(MessageHeaders::TIME_TO_LIVE) ? $convertedMessage->getHeaders()->get(MessageHeaders::TIME_TO_LIVE) : $this->defaultTimeToLive,
-            );
+            $convertedMessage->getHeaders()->containsKey(MessageHeaders::PRIORITY) ? $convertedMessage->getHeaders()->get(MessageHeaders::PRIORITY) : $this->defaultPriority,
+        );
     }
 }

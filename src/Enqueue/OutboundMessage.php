@@ -16,14 +16,17 @@ class OutboundMessage
     private $deliveryDelay;
     /** @var int|null */
     private $timeToLive;
+    /** @var int|null */
+    private $priority;
 
-    public function __construct($payload, array $headers, ?string $contentType, ?int $deliveryDelay, ?int $timeToLive)
+    public function __construct($payload, array $headers, ?string $contentType, ?int $deliveryDelay, ?int $timeToLive, ?int $priority)
     {
         $this->payload = $payload;
         $this->headers = $headers;
         $this->contentType = $contentType;
         $this->deliveryDelay = $deliveryDelay;
         $this->timeToLive = $timeToLive;
+        $this->priority = $priority;
     }
 
     /**
@@ -58,5 +61,10 @@ class OutboundMessage
     public function getTimeToLive(): ?int
     {
         return $this->timeToLive;
+    }
+
+    public function getPriority(): ?int
+    {
+        return $this->priority;
     }
 }
