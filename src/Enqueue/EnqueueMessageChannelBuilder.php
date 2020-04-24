@@ -34,9 +34,9 @@ abstract class EnqueueMessageChannelBuilder implements MessageChannelBuilder
             $pollingMetadata = $pollingMetadata
                 ->setMemoryLimitInMegaBytes($applicationConfiguration->getDefaultMemoryLimitInMegabytes());
         }
-        if ($applicationConfiguration && $applicationConfiguration->getChannelPollRetryTemplate()) {
+        if ($applicationConfiguration && $applicationConfiguration->getConnectionRetryTemplate()) {
             $pollingMetadata = $pollingMetadata
-                ->setChannelPollRetryTemplate($applicationConfiguration->getChannelPollRetryTemplate());
+                ->setConnectionRetryTemplate($applicationConfiguration->getConnectionRetryTemplate());
         }
 
         return $this->prepareProviderChannel($referenceSearchService, $pollingMetadata);
