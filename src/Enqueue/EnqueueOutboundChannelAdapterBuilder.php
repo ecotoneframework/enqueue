@@ -16,6 +16,7 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
     const         DEFAULT_AUTO_DECLARE = true;
     const DEFAULT_TIME_TO_LIVE = null;
     const DEFAULT_DELIVERY_DELAY = null;
+    const DEFAULT_PRIORITY = null;
 
     /**
      * @var string
@@ -38,13 +39,17 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
      */
     protected $defaultConversionMediaType;
     /**
-     * @var int
+     * @var int|null
      */
     protected $defaultTimeToLive = self::DEFAULT_TIME_TO_LIVE;
     /**
-     * @var int
+     * @var int|null
      */
     protected $defaultDeliveryDelay = self::DEFAULT_DELIVERY_DELAY;
+    /**
+     * @var int|null
+     */
+    protected $defaultPriority = self::DEFAULT_PRIORITY;
     /**
      * @var string[]
      */
@@ -68,6 +73,13 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
     public function withDefaultDeliveryDelay(?int $deliveryDelayInMilliseconds): self
     {
         $this->defaultDeliveryDelay = $deliveryDelayInMilliseconds;
+
+        return $this;
+    }
+
+    public function withDefaultPriority(?int $priority): self
+    {
+        $this->defaultPriority = $priority;
 
         return $this;
     }
