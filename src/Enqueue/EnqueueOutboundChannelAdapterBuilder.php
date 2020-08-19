@@ -26,10 +26,7 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
      * @var string
      */
     protected $inputChannelName = "";
-    /**
-     * @var HeaderMapper
-     */
-    protected $headerMapper;
+    protected array $headerMapper = [];
     /**
      * @var bool
      */
@@ -111,7 +108,7 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
      */
     public function withHeaderMapper(string $headerMapper): self
     {
-        $this->headerMapper = DefaultHeaderMapper::createWith([], explode(",", $headerMapper));
+        $this->headerMapper = explode(",", $headerMapper);
 
         return $this;
     }
@@ -180,6 +177,5 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
     protected function initialize(string $connectionReferenceName): void
     {
         $this->requiredReferenceNames[] = $connectionReferenceName;
-        $this->headerMapper = DefaultHeaderMapper::createNoMapping();
     }
 }

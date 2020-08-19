@@ -28,10 +28,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      * @var int
      */
     protected $receiveTimeoutInMilliseconds = self::DEFAULT_RECEIVE_TIMEOUT;
-    /**
-     * @var HeaderMapper
-     */
-    protected $headerMapper;
+    protected array $headerMapper = [];
     /**
      * @var string
      */
@@ -49,7 +46,6 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     {
         $this->requiredReferenceNames[] = $connectionReferenceName;
         $this->endpointId = $endpointId;
-        $this->headerMapper = DefaultHeaderMapper::createNoMapping();
         $this->inboundEntrypoint = $requestChannelName
             ? GatewayProxyBuilder::create($endpointId, InboundChannelAdapterEntrypoint::class, "executeEntrypoint", $requestChannelName)
             : NullEntrypointGateway::create();
@@ -109,7 +105,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function withHeaderMapper(string $headerMapper): self
     {
-        $this->headerMapper = DefaultHeaderMapper::createWith(explode(",", $headerMapper), []);
+        $this->headerMapper = explode(",", $headerMapper);
 
         return $this;
     }

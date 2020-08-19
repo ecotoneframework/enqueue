@@ -2,6 +2,8 @@
     "name": "ecotone/enqueue",
     "license": "MIT",
     "type": "library",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "authors": [
         {
             "name": "Dariusz Gafka",
@@ -25,8 +27,8 @@
         }
     },
     "require": {
-        "php": "^7.3",
-        "ecotone/ecotone": "^0.11",
+        "php": ">=7.4",
+        "ecotone/ecotone": "dev-master",
         "queue-interop/queue-interop": "*",
         "enqueue/dsn": "*"
     },
@@ -35,5 +37,16 @@
         "behat/behat": "^3.3.1",
         "phan/phan": "^1.2.0",
         "phpstan/phpstan": "^0.12"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../ecotone"
+        }
+    ],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.11.x-dev"
+        }
     }
 }
