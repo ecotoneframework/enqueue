@@ -96,7 +96,10 @@ class OutboundMessageConverter
         unset($applicationHeaders[MessageHeaders::DELIVERY_DELAY]);
         unset($applicationHeaders[MessageHeaders::TIME_TO_LIVE]);
         unset($applicationHeaders[MessageHeaders::CONTENT_TYPE]);
-        unset($applicationHeaders[$applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION]], $applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION]);
+        if (isset($applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION])) {
+            unset($applicationHeaders[$applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION]]);
+        }
+        unset($applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION]);
         unset($applicationHeaders[MessageHeaders::CONSUMER_ENDPOINT_ID]);
         unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL_NAME]);
         unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL]);
