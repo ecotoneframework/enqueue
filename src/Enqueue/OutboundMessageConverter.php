@@ -41,58 +41,17 @@ class OutboundMessageConverter
 
     public function __construct(HeaderMapper $headerMapper, ConversionService $conversionService, ?MediaType $defaultConversionMediaType, ?int $defaultDeliveryDelay, ?int $defaultTimeToLive, ?int $defaultPriority)
     {
-        $this->headerMapper = $headerMapper;
-        $this->conversionService = $conversionService;
+        $this->headerMapper               = $headerMapper;
+        $this->conversionService          = $conversionService;
         $this->defaultConversionMediaType = $defaultConversionMediaType;
-        $this->defaultDeliveryDelay = $defaultDeliveryDelay;
-        $this->defaultTimeToLive = $defaultTimeToLive;
-        $this->defaultPriority = $defaultPriority;
+        $this->defaultDeliveryDelay       = $defaultDeliveryDelay;
+        $this->defaultTimeToLive          = $defaultTimeToLive;
+        $this->defaultPriority            = $defaultPriority;
     }
 
     public function prepare(Message $convertedMessage): OutboundMessage
     {
-        $applicationHeaders = $this->headerMapper->mapFromMessageHeaders($convertedMessage->getHeaders()->headers());
-        $applicationHeaders[MessageHeaders::MESSAGE_ID] = $convertedMessage->getHeaders()->getMessageId();
-        $applicationHeaders[MessageHeaders::TIMESTAMP] = $convertedMessage->getHeaders()->getTimestamp();
-
-        $enqueueMessagePayload = $convertedMessage->getPayload();
-        $mediaType = $convertedMessage->getHeaders()->hasContentType() ? $convertedMessage->getHeaders()->getContentType() : null;
-        if (!is_string($enqueueMessagePayload)) {
-            if (!$convertedMessage->getHeaders()->hasContentType()) {
-                throw new InvalidArgumentException("Can't send outside of application. Payload has incorrect type, that can't be converted: " . TypeDescriptor::createFromVariable($enqueueMessagePayload)->toString());
-            }
-
-            $sourceType = $convertedMessage->getHeaders()->getContentType()->hasTypeParameter() ? $convertedMessage->getHeaders()->getContentType()->getTypeParameter() : TypeDescriptor::createFromVariable($enqueueMessagePayload);
-            $sourceMediaType = $convertedMessage->getHeaders()->getContentType();
-            $targetType = TypeDescriptor::createStringType();
-
-            $defaultConversionMediaType = $this->defaultConversionMediaType ? $this->defaultConversionMediaType : MediaType::createApplicationXPHPSerialized();
-            if ($this->conversionService->canConvert(
-                $sourceType,
-                $sourceMediaType,
-                $targetType,
-                $defaultConversionMediaType
-            )) {
-                $applicationHeaders[MessageHeaders::TYPE_ID] = TypeDescriptor::createFromVariable($enqueueMessagePayload)->toString();
-
-                $mediaType = $defaultConversionMediaType;
-                $enqueueMessagePayload = $this->conversionService->convert(
-                    $enqueueMessagePayload,
-                    $sourceType,
-                    $convertedMessage->getHeaders()->getContentType(),
-                    $targetType,
-                    $mediaType
-                );
-            } else {
-                throw new InvalidArgumentException("Can't send message to external channel. Payload has incorrect non-convertable type or converter is missing for: 
-                 From {$sourceMediaType}:{$sourceType} to {$defaultConversionMediaType}:{$targetType}");
-            }
-        }
-
-        if ($convertedMessage->getHeaders()->containsKey(MessageHeaders::ROUTING_SLIP)) {
-            $applicationHeaders[MessageHeaders::ROUTING_SLIP] = $convertedMessage->getHeaders()->get(MessageHeaders::ROUTING_SLIP);
-        }
-
+        $applicationHeaders                             = $convertedMessage->getHeaders()->headers();
         unset($applicationHeaders[MessageHeaders::DELIVERY_DELAY]);
         unset($applicationHeaders[MessageHeaders::TIME_TO_LIVE]);
         unset($applicationHeaders[MessageHeaders::CONTENT_TYPE]);
@@ -103,6 +62,50 @@ class OutboundMessageConverter
         unset($applicationHeaders[MessageHeaders::CONSUMER_ENDPOINT_ID]);
         unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL_NAME]);
         unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL]);
+
+        $applicationHeaders                             = $this->headerMapper->mapFromMessageHeaders($applicationHeaders);
+        $applicationHeaders[MessageHeaders::MESSAGE_ID] = $convertedMessage->getHeaders()->getMessageId();
+        $applicationHeaders[MessageHeaders::TIMESTAMP]  = $convertedMessage->getHeaders()->getTimestamp();
+
+        $enqueueMessagePayload = $convertedMessage->getPayload();
+        $mediaType             = $convertedMessage->getHeaders()->hasContentType() ? $convertedMessage->getHeaders()->getContentType() : null;
+        if (!is_string($enqueueMessagePayload)) {
+            if (!$convertedMessage->getHeaders()->hasContentType()) {
+                throw new InvalidArgumentException("Can't send outside of application. Payload has incorrect type, that can't be converted: " . TypeDescriptor::createFromVariable($enqueueMessagePayload)->toString());
+            }
+
+            $sourceType      = $convertedMessage->getHeaders()->getContentType()->hasTypeParameter() ? $convertedMessage->getHeaders()->getContentType()->getTypeParameter() : TypeDescriptor::createFromVariable($enqueueMessagePayload);
+            $sourceMediaType = $convertedMessage->getHeaders()->getContentType();
+            $targetType      = TypeDescriptor::createStringType();
+
+            $defaultConversionMediaType = $this->defaultConversionMediaType ? $this->defaultConversionMediaType : MediaType::createApplicationXPHPSerialized();
+            if ($this->conversionService->canConvert(
+                $sourceType,
+                $sourceMediaType,
+                $targetType,
+                $defaultConversionMediaType
+            )) {
+                $applicationHeaders[MessageHeaders::TYPE_ID] = TypeDescriptor::createFromVariable($enqueueMessagePayload)->toString();
+
+                $mediaType             = $defaultConversionMediaType;
+                $enqueueMessagePayload = $this->conversionService->convert(
+                    $enqueueMessagePayload,
+                    $sourceType,
+                    $convertedMessage->getHeaders()->getContentType(),
+                    $targetType,
+                    $mediaType
+                );
+            } else {
+                throw new InvalidArgumentException(
+                    "Can't send message to external channel. Payload has incorrect non-convertable type or converter is missing for: 
+                 From {$sourceMediaType}:{$sourceType} to {$defaultConversionMediaType}:{$targetType}"
+                );
+            }
+        }
+
+        if ($convertedMessage->getHeaders()->containsKey(MessageHeaders::ROUTING_SLIP)) {
+            $applicationHeaders[MessageHeaders::ROUTING_SLIP] = $convertedMessage->getHeaders()->get(MessageHeaders::ROUTING_SLIP);
+        }
 
         return new OutboundMessage(
             $enqueueMessagePayload,
