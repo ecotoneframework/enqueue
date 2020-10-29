@@ -50,9 +50,12 @@ class CachedConnectionFactory implements ConnectionFactory
         return $this->cachedContext;
     }
 
-    public function reconnect() : void
+    public function closeCurrentContext() : void
     {
-        $this->connectionFactory->reconnect();
+        if ($this->cachedContext) {
+            $this->cachedContext->close();
+            unset($this->cachedContext);
+        }
     }
 
     public function getConsumer(Destination $destination) : Consumer
