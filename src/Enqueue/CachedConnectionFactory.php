@@ -40,10 +40,6 @@ class CachedConnectionFactory implements ConnectionFactory
     public function createContext(): Context
     {
         if (!$this->cachedContext || $this->connectionFactory->isDisconnected($this->cachedContext)) {
-            if ($this->connectionFactory->isDisconnected($this->cachedContext)) {
-                $this->connectionFactory->reconnect();
-            }
-
             $this->cachedContext = $this->connectionFactory->createContext();
         }
 
