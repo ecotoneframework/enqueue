@@ -14,32 +14,15 @@ use Ecotone\Messaging\Support\InvalidArgumentException;
 
 class OutboundMessageConverter
 {
-    /**
-     * @var HeaderMapper
-     */
-    private $headerMapper;
-    /**
-     * @var ConversionService
-     */
-    private $conversionService;
-    /**
-     * @var MediaType|null
-     */
-    private $defaultConversionMediaType;
-    /**
-     * @var int|null
-     */
-    private $defaultDeliveryDelay;
-    /**
-     * @var int|null
-     */
-    private $defaultTimeToLive;
-    /**
-     * @var int|null
-     */
-    private $defaultPriority;
+    private HeaderMapper $headerMapper;
+    private ConversionService $conversionService;
+    private ?MediaType $defaultConversionMediaType;
+    private ?int $defaultDeliveryDelay;
+    private ?int $defaultTimeToLive;
+    private ?int $defaultPriority;
+    private array $staticHeadersToAdd;
 
-    public function __construct(HeaderMapper $headerMapper, ConversionService $conversionService, ?MediaType $defaultConversionMediaType, ?int $defaultDeliveryDelay, ?int $defaultTimeToLive, ?int $defaultPriority)
+    public function __construct(HeaderMapper $headerMapper, ConversionService $conversionService, ?MediaType $defaultConversionMediaType, ?int $defaultDeliveryDelay, ?int $defaultTimeToLive, ?int $defaultPriority, array $staticHeadersToAdd)
     {
         $this->headerMapper               = $headerMapper;
         $this->conversionService          = $conversionService;
@@ -47,6 +30,7 @@ class OutboundMessageConverter
         $this->defaultDeliveryDelay       = $defaultDeliveryDelay;
         $this->defaultTimeToLive          = $defaultTimeToLive;
         $this->defaultPriority            = $defaultPriority;
+        $this->staticHeadersToAdd = $staticHeadersToAdd;
     }
 
     public function prepare(Message $convertedMessage): OutboundMessage
@@ -61,7 +45,6 @@ class OutboundMessageConverter
         unset($applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION]);
         unset($applicationHeaders[MessageHeaders::CONSUMER_ENDPOINT_ID]);
         unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL_NAME]);
-        unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL]);
 
         $applicationHeaders                             = $this->headerMapper->mapFromMessageHeaders($applicationHeaders);
         $applicationHeaders[MessageHeaders::MESSAGE_ID] = $convertedMessage->getHeaders()->getMessageId();
@@ -109,7 +92,7 @@ class OutboundMessageConverter
 
         return new OutboundMessage(
             $enqueueMessagePayload,
-            $applicationHeaders,
+            array_merge($applicationHeaders, $this->staticHeadersToAdd),
             $mediaType ? $mediaType->toString() : null,
             $convertedMessage->getHeaders()->containsKey(MessageHeaders::DELIVERY_DELAY) ? $convertedMessage->getHeaders()->get(MessageHeaders::DELIVERY_DELAY) : $this->defaultDeliveryDelay,
             $convertedMessage->getHeaders()->containsKey(MessageHeaders::TIME_TO_LIVE) ? $convertedMessage->getHeaders()->get(MessageHeaders::TIME_TO_LIVE) : $this->defaultTimeToLive,

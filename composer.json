@@ -1,6 +1,7 @@
 {
     "name": "ecotone/enqueue",
     "license": "MIT",
+    "homepage": "https://docs.ecotone.tech/",
     "type": "library",
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -27,8 +28,8 @@
         }
     },
     "require": {
-        "php": ">=7.4",
-        "ecotone/ecotone": "^0.12",
+        "php": ">=8.0",
+        "ecotone/ecotone": "^1.0",
         "queue-interop/queue-interop": "*",
         "enqueue/dsn": "*"
     },
@@ -38,15 +39,7 @@
         "phan/phan": "^1.2.0",
         "phpstan/phpstan": "^0.12"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../ecotone"
-        }
-    ],
     "extra": {
-        "branch-alias": {
-            "dev-master": "0.11.x-dev"
-        }
+        "branch-version": "1.x"
     }
 }

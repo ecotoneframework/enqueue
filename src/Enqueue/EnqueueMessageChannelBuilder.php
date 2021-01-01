@@ -3,7 +3,7 @@
 namespace Ecotone\Enqueue;
 
 use Ecotone\Messaging\Channel\MessageChannelBuilder;
-use Ecotone\Messaging\Config\ApplicationConfiguration;
+use Ecotone\Messaging\Config\ServiceConfiguration;
 use Ecotone\Messaging\Conversion\MediaType;
 use Ecotone\Messaging\Endpoint\PollingMetadata;
 use Ecotone\Messaging\Handler\ReferenceSearchService;
@@ -18,8 +18,8 @@ abstract class EnqueueMessageChannelBuilder implements MessageChannelBuilder
 
     public function build(ReferenceSearchService $referenceSearchService): MessageChannel
     {
-        /** @var ApplicationConfiguration|null $applicationConfiguration */
-        $applicationConfiguration = $referenceSearchService->has(ApplicationConfiguration::class) ? $referenceSearchService->get(ApplicationConfiguration::class) : null;
+        /** @var ServiceConfiguration|null $applicationConfiguration */
+        $applicationConfiguration = $referenceSearchService->has(ServiceConfiguration::class) ? $referenceSearchService->get(ServiceConfiguration::class) : null;
         $pollingMetadata = PollingMetadata::create("");
 
         if (!$this->getDefaultConversionMediaType() && $applicationConfiguration && $applicationConfiguration->getDefaultSerializationMediaType()) {

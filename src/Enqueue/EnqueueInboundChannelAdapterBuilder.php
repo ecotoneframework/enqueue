@@ -55,7 +55,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     {
         if (!$this->isNullableGateway()) {
             if ($this->withAckInterceptor) {
-                $this->inboundEntrypoint->addAroundInterceptor(AcknowledgeConfirmationInterceptor::createAroundInterceptor(""));
+                $this->inboundEntrypoint->addAroundInterceptor(AcknowledgeConfirmationInterceptor::createAroundInterceptor());
             }
 
             return $this->inboundEntrypoint
@@ -134,7 +134,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     /**
      * @inheritDoc
      */
-    public function addBeforeInterceptor(MethodInterceptor $methodInterceptor)
+    public function addBeforeInterceptor(MethodInterceptor $methodInterceptor): self
     {
         $this->inboundEntrypoint->addBeforeInterceptor($methodInterceptor);
 
@@ -144,7 +144,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     /**
      * @inheritDoc
      */
-    public function addAfterInterceptor(MethodInterceptor $methodInterceptor)
+    public function addAfterInterceptor(MethodInterceptor $methodInterceptor): self
     {
         $this->inboundEntrypoint->addAfterInterceptor($methodInterceptor);
 
