@@ -55,7 +55,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     {
         if (!$this->isNullableGateway()) {
             if ($this->withAckInterceptor) {
-                $this->inboundEntrypoint->addAroundInterceptor(AcknowledgeConfirmationInterceptor::createAroundInterceptor());
+                $this->inboundEntrypoint->addAroundInterceptor(AcknowledgeConfirmationInterceptor::createAroundInterceptor($pollingMetadata));
             }
 
             return $this->inboundEntrypoint
