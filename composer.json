@@ -34,7 +34,7 @@
     }
   },
   "require": {
-    "ecotone/ecotone": "1.6.1",
+    "ecotone/ecotone": "1.6.2",
     "queue-interop/queue-interop": "*",
     "enqueue/dsn": "*"
   },
