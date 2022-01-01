@@ -34,7 +34,7 @@
     }
   },
   "require": {
-    "ecotone/ecotone": "~1.8.1",
+    "ecotone/ecotone": "~1.8.2",
     "queue-interop/queue-interop": "*",
     "enqueue/dsn": "*"
   },
@@ -46,7 +46,7 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-master": "1.8.1-dev"
+      "dev-master": "1.8.2-dev"
     }
   }
 }
