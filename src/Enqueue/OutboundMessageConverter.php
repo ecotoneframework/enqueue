@@ -33,9 +33,8 @@ class OutboundMessageConverter
         $this->staticHeadersToAdd = $staticHeadersToAdd;
     }
 
-    public function prepare(Message $convertedMessage): OutboundMessage
+    public static function unsetEnqueueMetadata(?array $applicationHeaders): ?array
     {
-        $applicationHeaders                             = $convertedMessage->getHeaders()->headers();
         unset($applicationHeaders[MessageHeaders::DELIVERY_DELAY]);
         unset($applicationHeaders[MessageHeaders::TIME_TO_LIVE]);
         unset($applicationHeaders[MessageHeaders::CONTENT_TYPE]);
@@ -45,6 +44,14 @@ class OutboundMessageConverter
         unset($applicationHeaders[MessageHeaders::CONSUMER_ACK_HEADER_LOCATION]);
         unset($applicationHeaders[MessageHeaders::CONSUMER_ENDPOINT_ID]);
         unset($applicationHeaders[MessageHeaders::POLLED_CHANNEL_NAME]);
+
+        return $applicationHeaders;
+    }
+
+    public function prepare(Message $convertedMessage): OutboundMessage
+    {
+        $applicationHeaders                             = $convertedMessage->getHeaders()->headers();
+        $applicationHeaders = self::unsetEnqueueMetadata($applicationHeaders);
 
         $applicationHeaders                             = $this->headerMapper->mapFromMessageHeaders($applicationHeaders);
         $applicationHeaders[MessageHeaders::MESSAGE_ID] = $convertedMessage->getHeaders()->getMessageId();
