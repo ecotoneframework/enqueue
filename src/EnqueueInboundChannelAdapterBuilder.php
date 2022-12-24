@@ -2,13 +2,9 @@
 
 namespace Ecotone\Enqueue;
 
-use Ecotone\Amqp\AmqpInboundChannelAdapter;
-use Ecotone\Messaging\Endpoint\AcknowledgeConfirmationInterceptor;
-use Ecotone\Messaging\Endpoint\ConsumerLifecycle;
 use Ecotone\Messaging\Endpoint\InboundChannelAdapterEntrypoint;
 use Ecotone\Messaging\Endpoint\InterceptedChannelAdapterBuilder;
 use Ecotone\Messaging\Endpoint\PollingMetadata;
-use Ecotone\Messaging\Endpoint\TaskExecutorChannelAdapter\TaskExecutorChannelAdapter;
 use Ecotone\Messaging\Handler\ChannelResolver;
 use Ecotone\Messaging\Handler\Gateway\GatewayProxyBuilder;
 use Ecotone\Messaging\Handler\InterfaceToCall;
@@ -16,11 +12,10 @@ use Ecotone\Messaging\Handler\InterfaceToCallRegistry;
 use Ecotone\Messaging\Handler\Processor\MethodInvoker\AroundInterceptorReference;
 use Ecotone\Messaging\Handler\Processor\MethodInvoker\MethodInterceptor;
 use Ecotone\Messaging\Handler\ReferenceSearchService;
-use Ecotone\Messaging\Scheduling\TaskExecutor;
 
 abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAdapterBuilder
 {
-    const DECLARE_ON_STARTUP_DEFAULT = true;
+    public const DECLARE_ON_STARTUP_DEFAULT = true;
     public const DEFAULT_RECEIVE_TIMEOUT = 10000;
 
     /**
@@ -33,14 +28,8 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      * @var string
      */
     protected $acknowledgeMode = EnqueueAcknowledgementCallback::AUTO_ACK;
-    /**
-     * @var InboundChannelAdapterEntrypoint|GatewayProxyBuilder
-     */
-    protected $inboundEntrypoint;
 
     protected array $requiredReferenceNames = [];
-
-    protected $withAckInterceptor = false;
 
     protected bool $declareOnStartup = self::DECLARE_ON_STARTUP_DEFAULT;
 
@@ -54,7 +43,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
         $this->connectionReferenceName = $connectionReferenceName;
         $this->requiredReferenceNames[] = $connectionReferenceName;
         $this->endpointId = $endpointId;
-        $this->inboundEntrypoint = $requestChannelName
+        $this->inboundGateway = $requestChannelName
             ? GatewayProxyBuilder::create($endpointId, InboundChannelAdapterEntrypoint::class, 'executeEntrypoint', $requestChannelName)
             : NullEntrypointGateway::create();
     }
@@ -62,12 +51,12 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
     protected function buildGatewayFor(ReferenceSearchService $referenceSearchService, ChannelResolver $channelResolver, PollingMetadata $pollingMetadata): InboundChannelAdapterEntrypoint
     {
         if (! $this->isNullableGateway()) {
-            return $this->inboundEntrypoint
+            return $this->inboundGateway
                 ->withErrorChannel($pollingMetadata->getErrorChannelName())
                 ->build($referenceSearchService, $channelResolver);
         }
 
-        return $this->inboundEntrypoint;
+        return $this->inboundGateway;
     }
 
     /**
@@ -79,7 +68,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
             return $this;
         }
 
-        $this->inboundEntrypoint->addAroundInterceptor($aroundInterceptorReference);
+        $this->inboundGateway->addAroundInterceptor($aroundInterceptorReference);
 
         return $this;
     }
@@ -89,7 +78,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function resolveRelatedInterfaces(InterfaceToCallRegistry $interfaceToCallRegistry): iterable
     {
-        $resolvedInterfaces = $this->isNullableGateway() ? [] : $this->inboundEntrypoint->resolveRelatedInterfaces($interfaceToCallRegistry);
+        $resolvedInterfaces = $this->isNullableGateway() ? [] : $this->inboundGateway->resolveRelatedInterfaces($interfaceToCallRegistry);
         $resolvedInterfaces[] = $interfaceToCallRegistry->getFor(InboundChannelAdapterEntrypoint::class, 'executeEntrypoint');
 
         return $resolvedInterfaces;
@@ -137,7 +126,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function getRequiredReferences(): array
     {
-        return array_merge($this->requiredReferenceNames, $this->isNullableGateway() ? [] : $this->inboundEntrypoint->getRequiredReferences());
+        return array_merge($this->requiredReferenceNames, $this->isNullableGateway() ? [] : $this->inboundGateway->getRequiredReferences());
     }
 
     /**
@@ -145,7 +134,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function addBeforeInterceptor(MethodInterceptor $methodInterceptor): self
     {
-        $this->inboundEntrypoint->addBeforeInterceptor($methodInterceptor);
+        $this->inboundGateway->addBeforeInterceptor($methodInterceptor);
 
         return $this;
     }
@@ -155,7 +144,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function addAfterInterceptor(MethodInterceptor $methodInterceptor): self
     {
-        $this->inboundEntrypoint->addAfterInterceptor($methodInterceptor);
+        $this->inboundGateway->addAfterInterceptor($methodInterceptor);
 
         return $this;
     }
@@ -165,7 +154,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function getInterceptedInterface(InterfaceToCallRegistry $interfaceToCallRegistry): InterfaceToCall
     {
-        return $this->inboundEntrypoint->getInterceptedInterface($interfaceToCallRegistry);
+        return $this->inboundGateway->getInterceptedInterface($interfaceToCallRegistry);
     }
 
     /**
@@ -173,7 +162,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function withEndpointAnnotations(iterable $endpointAnnotations)
     {
-        $this->inboundEntrypoint->withEndpointAnnotations($endpointAnnotations);
+        $this->inboundGateway->withEndpointAnnotations($endpointAnnotations);
 
         return $this;
     }
@@ -183,7 +172,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function getEndpointAnnotations(): array
     {
-        return $this->inboundEntrypoint->getEndpointAnnotations();
+        return $this->inboundGateway->getEndpointAnnotations();
     }
 
     /**
@@ -191,7 +180,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function getRequiredInterceptorNames(): iterable
     {
-        return $this->inboundEntrypoint->getRequiredInterceptorNames();
+        return $this->inboundGateway->getRequiredInterceptorNames();
     }
 
     /**
@@ -199,7 +188,7 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     public function withRequiredInterceptorNames(iterable $interceptorNames)
     {
-        $this->inboundEntrypoint->withRequiredInterceptorNames($interceptorNames);
+        $this->inboundGateway->withRequiredInterceptorNames($interceptorNames);
 
         return $this;
     }
@@ -229,8 +218,8 @@ abstract class EnqueueInboundChannelAdapterBuilder extends InterceptedChannelAda
      */
     private function isNullableGateway(): bool
     {
-        return $this->inboundEntrypoint instanceof NullEntrypointGateway;
+        return $this->inboundGateway instanceof NullEntrypointGateway;
     }
 
-    public abstract function createInboundChannelAdapter(ChannelResolver $channelResolver, ReferenceSearchService $referenceSearchService, PollingMetadata $pollingMetadata): EnqueueInboundChannelAdapter;
+    abstract public function createInboundChannelAdapter(ChannelResolver $channelResolver, ReferenceSearchService $referenceSearchService, PollingMetadata $pollingMetadata): EnqueueInboundChannelAdapter;
 }
