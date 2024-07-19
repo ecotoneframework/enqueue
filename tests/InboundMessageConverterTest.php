@@ -17,6 +17,10 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  */
+/**
+ * licence Apache-2.0
+ * @internal
+ */
 final class InboundMessageConverterTest extends TestCase
 {
     public function test_it_will_map_automatically_core_headers(): void
