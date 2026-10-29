@@ -2,11 +2,11 @@
 
 namespace Ecotone\Enqueue;
 
-use Ecotone\Api\ExtensionObject\FinalFailureStrategy;
-use Ecotone\Api\Messaging\MessageHeaders;
 use Ecotone\Messaging\Conversion\ConversionService;
+use Ecotone\Messaging\Endpoint\FinalFailureStrategy;
 use Ecotone\Messaging\Handler\Logger\LoggingGateway;
 use Ecotone\Messaging\MessageConverter\HeaderMapper;
+use Ecotone\Messaging\MessageHeaders;
 use Ecotone\Messaging\Support\MessageBuilder;
 use Interop\Queue\Consumer as EnqueueConsumer;
 use Interop\Queue\Message as EnqueueMessage;
@@ -22,7 +22,6 @@ class InboundMessageConverter
         private HeaderMapper $headerMapper,
         private string $acknowledgeHeaderName,
         private LoggingGateway $loggingGateway,
-        private MessageBuilder $messageBuilder,
         private FinalFailureStrategy $finalFailureStrategy = FinalFailureStrategy::RESEND,
     ) {
 
@@ -36,7 +35,7 @@ class InboundMessageConverter
     public function toMessage(EnqueueMessage $source, EnqueueConsumer $consumer, ConversionService $conversionService, CachedConnectionFactory $connectionFactory): MessageBuilder
     {
         $enqueueMessageHeaders = $source->getProperties();
-        $messageBuilder = $this->messageBuilder->withPayload($source->getBody())
+        $messageBuilder = MessageBuilder::withPayload($source->getBody())
             ->setMultipleHeaders($this->headerMapper->mapToMessageHeaders($enqueueMessageHeaders, $conversionService));
 
         $amqpAcknowledgeCallback = EnqueueAcknowledgementCallback::create(

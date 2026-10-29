@@ -2,7 +2,7 @@
 
 namespace Ecotone\Enqueue;
 
-use Ecotone\Api\ExtensionObject\MediaType;
+use Ecotone\Messaging\Conversion\MediaType;
 use Ecotone\Messaging\Handler\MessageHandlerBuilder;
 use Ecotone\Messaging\MessageConverter\DefaultHeaderMapper;
 use Ecotone\Messaging\MessageConverter\HeaderMapper;
@@ -32,7 +32,6 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
      * @var bool
      */
     protected $autoDeclare = self::DEFAULT_AUTO_DECLARE;
-    protected bool $requireExistingDestination = false;
     /**
      * @var MediaType
      */
@@ -118,18 +117,6 @@ abstract class EnqueueOutboundChannelAdapterBuilder implements MessageHandlerBui
         $this->autoDeclare = $toDeclare;
 
         return $this;
-    }
-
-    public function withRequiredExistingDestination(): static
-    {
-        $this->requireExistingDestination = true;
-
-        return $this;
-    }
-
-    protected function declaresOnSend(): bool
-    {
-        return $this->autoDeclare && ! $this->requireExistingDestination;
     }
 
     /**

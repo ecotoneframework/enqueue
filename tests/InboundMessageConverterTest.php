@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Test\Ecotone;
 
-use Ecotone\Api\Messaging\MessageHeaders;
 use Ecotone\Enqueue\CachedConnectionFactory;
 use Ecotone\Enqueue\EnqueueAcknowledgementCallback;
 use Ecotone\Enqueue\InboundMessageConverter;
 use Ecotone\Messaging\Handler\Logger\StubLoggingGateway;
 use Ecotone\Messaging\MessageConverter\DefaultHeaderMapper;
-use Ecotone\Messaging\Scheduling\NativeClock;
-use Ecotone\Messaging\Support\MessageBuilder;
+use Ecotone\Messaging\MessageHeaders;
 use Ecotone\Test\InMemoryConversionService;
 use Enqueue\Null\NullConsumer;
 use Enqueue\Null\NullMessage;
@@ -35,7 +33,6 @@ final class InboundMessageConverterTest extends TestCase
             DefaultHeaderMapper::createNoMapping(),
             'ack',
             new StubLoggingGateway(),
-            new MessageBuilder(new NativeClock()),
         );
 
         $message = $inboundMessageConverter->toMessage(

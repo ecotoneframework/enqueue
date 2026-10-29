@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Ecotone\Enqueue;
 
-use Ecotone\Api\Messaging\BatchMessage;
-use Ecotone\Api\Messaging\Message;
-use Ecotone\Api\Messaging\MessageHeaders;
+use Ecotone\Messaging\BatchMessage;
 use Ecotone\Messaging\Channel\PollableChannel\Serialization\OutboundMessage;
 use Ecotone\Messaging\Channel\PollableChannel\Serialization\OutboundMessageConverter;
 use Ecotone\Messaging\Config\ConfigurationException;
 use Ecotone\Messaging\Conversion\ConversionService;
+use Ecotone\Messaging\Message;
 use Ecotone\Messaging\MessageHandler;
+use Ecotone\Messaging\MessageHeaders;
 use Ecotone\Messaging\Support\MessageBuilder;
 use Interop\Queue\Context;
 use Interop\Queue\Destination;
@@ -31,7 +31,6 @@ abstract class EnqueueOutboundChannelAdapter implements MessageHandler
         protected bool                     $autoDeclare,
         protected OutboundMessageConverter $outboundMessageConverter,
         private ConversionService $conversionService,
-        private MessageBuilder $messageBuilder,
         private bool $batchPublishing = false,
         private string $channelName = '',
     ) {
@@ -71,14 +70,14 @@ abstract class EnqueueOutboundChannelAdapter implements MessageHandler
 
     protected function handleBatch(BatchMessage $batchMessage, Context $context): void
     {
-        foreach ($batchMessage->entries as $entry) {
+        foreach ($batchMessage->getEntries() as $entry) {
             $this->sendSingleMessage($this->convertBatchEntryToMessage($entry), $context);
         }
     }
 
     protected function convertBatchEntryToMessage(array $entry): Message
     {
-        return $this->messageBuilder->withPayload($entry['payload'])
+        return MessageBuilder::withPayload($entry['payload'])
             ->setMultipleHeaders($entry['headers'])
             ->build();
     }
